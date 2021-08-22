@@ -11,5 +11,13 @@ func NewAuthHandler() AuthHandler {
 }
 
 func (handler *AuthHandler) Login(writer http.ResponseWriter, request *http.Request) {
-	writer.Write([]byte("Not Implemented"))
+	writer.WriteHeader(http.StatusNotImplemented)
+}
+
+func (handler *AuthHandler) Register(writer http.ResponseWriter, request *http.Request) {
+	writer.WriteHeader(http.StatusNotImplemented)
+}
+
+func (handler *AuthHandler) Verify(writer http.ResponseWriter, request *http.Request) {
+	writer.WriteHeader(http.StatusNotImplemented)
 }

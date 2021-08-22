@@ -1,6 +1,6 @@
 package web
 
 type UserChangePasswordRequest struct {
-	Id       int
+	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`
 }

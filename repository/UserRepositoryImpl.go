@@ -37,6 +37,28 @@ func (u UserRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, id int) (e
 	}
 }
 
+func (u UserRepositoryImpl) FindByUsername(ctx context.Context, tx *sql.Tx, username string) (entity.User, error) {
+	query := "select id, username, email, created_at, verified_at from user where username = ?;"
+	rows, err := tx.QueryContext(ctx, query, username)
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+
+	user := entity.User{}
+	if rows.Next() {
+		err = rows.Scan(&user.Id, &user.Username, &user.Email, &user.CreatedAt, &user.VerifiedAt)
+		if err != nil {
+			return user, err
+		}
+
+		return user, nil
+	} else {
+		return user, errors.New("user not found")
+	}
+}
+
 func (u UserRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, user entity.User) entity.User {
 	query := "insert into user(username, email, password, created_at) values(?, ?, ?, ?);"
 	result, err := tx.ExecContext(ctx, query, user.Username, user.Email, user.Password, user.CreatedAt)
@@ -47,7 +69,7 @@ func (u UserRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, user entity.Us
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		panic(err)
+		return entity.User{}
 	}
 
 	user.Id = int(id)
@@ -55,8 +77,8 @@ func (u UserRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, user entity.Us
 }
 
 func (u UserRepositoryImpl) ChangePassword(ctx context.Context, tx *sql.Tx, user entity.User) (entity.User, error) {
-	query := "update user set password = ? where id = ?;"
-	_, err := tx.ExecContext(ctx, query, user.Password, user.Id)
+	query := "update user set password = ? where username = ?;"
+	_, err := tx.ExecContext(ctx, query, user.Password, user.Username)
 
 	if err != nil {
 		return user, err

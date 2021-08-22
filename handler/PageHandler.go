@@ -1,31 +1,23 @@
 package handler
 
-import (
-	"encoding/json"
-	"github.com/gorilla/mux"
-	"github.com/yogamuris/sohappytocyou/entity"
-	"image/color"
-	"log"
-	"net/http"
-)
+import "net/http"
 
-func UserPageHandler(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	username := params["username"]
+type PageHandler struct {
 
-	if r.Method == "GET" {
-		pagePayload := entity.Page{
-			Username:    username,
-			Background:  color.Black,
-			Photo:       "",
-			Description: "Testing",
-			Links:       nil,
-		}
-		js, err := json.Marshal(pagePayload)
-		if err != nil {
-			log.Fatal(err)
-		}
-		w.Write(js)
-	}
+}
 
+func NewPageHandler() PageHandler {
+	return PageHandler{}
+}
+
+func (handler *PageHandler) Show(writer http.ResponseWriter, request *http.Request) {
+	writer.WriteHeader(http.StatusNotImplemented)
+}
+
+func (handler *PageHandler) Create(writer http.ResponseWriter, request *http.Request) {
+	writer.WriteHeader(http.StatusNotImplemented)
+}
+
+func (handler *PageHandler) Update(writer http.ResponseWriter, request *http.Request) {
+	writer.WriteHeader(http.StatusNotImplemented)
 }

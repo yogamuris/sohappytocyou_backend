@@ -68,12 +68,14 @@ func (service *UserServiceImpl) ChangePassword(ctx context.Context, request web.
 
 	defer commitOrRollback(tx)
 
-	user, err := service.UserRepository.FindById(ctx, tx, request.Id)
+	user, err := service.UserRepository.FindByUsername(ctx, tx, request.Username)
 	if err != nil {
 		return web.UserResponse{}, err
 	}
 
-	user.Password = request.Password
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(request.Password), 14)
+
+	user.Password = string(hashedPassword)
 	user, err = service.UserRepository.ChangePassword(ctx, tx, user)
 	if err != nil {
 		return web.UserResponse{}, err
@@ -86,15 +88,14 @@ func (service *UserServiceImpl) ChangePassword(ctx context.Context, request web.
 	}, nil
 }
 
-func (service *UserServiceImpl) FindById(ctx context.Context, id int) (web.UserResponse, error) {
+func (service *UserServiceImpl) FindByUsername(ctx context.Context, username string) (web.UserResponse, error) {
 	tx, err := service.Db.Begin()
 	if err != nil {
 		return web.UserResponse{}, err
 	}
-
 	defer commitOrRollback(tx)
 
-	user, err := service.UserRepository.FindById(ctx, tx, id)
+	user, err := service.UserRepository.FindByUsername(ctx, tx, username)
 	if err != nil {
 		return web.UserResponse{}, err
 	}

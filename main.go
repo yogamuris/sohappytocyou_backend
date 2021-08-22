@@ -16,7 +16,10 @@ func main() {
 	defer db.Close()
 
 	validate := validator.New()
+
 	authHandler := handler.NewAuthHandler()
+	pageHandler := handler.NewPageHandler()
+	linkHandler := handler.NewLinkHandler()
 
 	userRepository := repository.NewUserRepository()
 	userService := service.NewUserService(userRepository, db, validate)
@@ -24,8 +27,25 @@ func main() {
 
 
 	router := mux.NewRouter()
-	router.HandleFunc("/login", authHandler.Login).Methods("POST")
-	router.HandleFunc("/register", userHandler.Create).Methods("POST")
+	router.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
+	router.HandleFunc("/auth/register", authHandler.Register).Methods("POST")
+	router.HandleFunc("/auth/verify", authHandler.Verify).Methods("POST")
+
+	router.HandleFunc("/user/{username}", userHandler.FindByUsername).Methods("GET")
+	router.HandleFunc("/user/{username}/change-password", userHandler.ChangePassword).Methods("PUT")
+
+	router.HandleFunc("/user/{username}/page", pageHandler.Show).Methods("GET")
+	router.HandleFunc("/user/{username}/page", pageHandler.Create).Methods("POST")
+	router.HandleFunc("/user/{username}/page/update", pageHandler.Update).Methods("PUT")
+
+	router.HandleFunc("/user/{username}/page/links", linkHandler.List).Methods("GET")
+	router.HandleFunc("/user/{username}/page/links", linkHandler.Create).Methods("POST")
+	router.HandleFunc("/user/{username}/page/links/{id}", linkHandler.Show).Methods("GET")
+	router.HandleFunc("/user/{username}/page/links/{id}/delete", linkHandler.Delete).Methods("DELETE")
+
+	router.HandleFunc("/user/{username}/page/analytic", NotImplemented).Methods("GET")
+	router.HandleFunc("/user/{username}/page/links/analytic", NotImplemented).Methods("GET")
+	router.HandleFunc("/user/{username}/page/links/{id}/analytic", NotImplemented).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
