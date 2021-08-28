@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/yogamuris/sohappytocyou/entity"
 	"github.com/yogamuris/sohappytocyou/entity/web"
+	"github.com/yogamuris/sohappytocyou/helper"
 	"github.com/yogamuris/sohappytocyou/repository"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -13,8 +14,8 @@ import (
 
 type UserServiceImpl struct {
 	UserRepository repository.UserRepository
-	Db	*sql.DB
-	Validate *validator.Validate
+	Db             *sql.DB
+	Validate       *validator.Validate
 }
 
 func NewUserService(userRepository repository.UserRepository, DB *sql.DB, validate *validator.Validate) UserService {
@@ -35,23 +36,27 @@ func (service *UserServiceImpl) Create(ctx context.Context, request web.UserCrea
 	if err != nil {
 		return web.UserResponse{}, err
 	}
-	defer commitOrRollback(tx)
+	defer helper.CommitOrRollback(tx)
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(request.Password), 14)
-	
+
 	user := entity.User{
-		Username: request.Username,
-		Email: request.Email,
-		Password: string(hashedPassword),
+		Username:  request.Username,
+		Email:     request.Email,
+		Password:  string(hashedPassword),
 		CreatedAt: time.Now(),
 	}
-	
-	user = service.UserRepository.Save(ctx, tx, user)
-	
+
+	user, err = service.UserRepository.Save(ctx, tx, user)
+
+	if err != nil {
+		return web.UserResponse{}, err
+	}
+
 	return web.UserResponse{
-		Id:        user.Id,
-		Username:  user.Username,
-		Email:     user.Email,
+		Id:       user.Id,
+		Username: user.Username,
+		Email:    user.Email,
 	}, nil
 }
 
@@ -66,7 +71,7 @@ func (service *UserServiceImpl) ChangePassword(ctx context.Context, request web.
 		return web.UserResponse{}, err
 	}
 
-	defer commitOrRollback(tx)
+	defer helper.CommitOrRollback(tx)
 
 	user, err := service.UserRepository.FindByUsername(ctx, tx, request.Username)
 	if err != nil {
@@ -93,7 +98,7 @@ func (service *UserServiceImpl) FindByUsername(ctx context.Context, username str
 	if err != nil {
 		return web.UserResponse{}, err
 	}
-	defer commitOrRollback(tx)
+	defer helper.CommitOrRollback(tx)
 
 	user, err := service.UserRepository.FindByUsername(ctx, tx, username)
 	if err != nil {
@@ -113,7 +118,7 @@ func (service *UserServiceImpl) Delete(ctx context.Context, id int) error {
 		return err
 	}
 
-	defer commitOrRollback(tx)
+	defer helper.CommitOrRollback(tx)
 
 	err = service.UserRepository.Delete(ctx, tx, id)
 	if err != nil {
@@ -122,21 +127,3 @@ func (service *UserServiceImpl) Delete(ctx context.Context, id int) error {
 
 	return nil
 }
-
-func commitOrRollback(tx *sql.Tx) {
-	err := recover()
-	if err != nil {
-		errorRollback := tx.Rollback()
-		if errorRollback != nil {
-			panic(errorRollback)
-		}
-		panic(err)
-	} else {
-		errorCommit := tx.Commit()
-		if errorCommit != nil {
-			panic(errorCommit)
-		}
-	}
-}
-
-

@@ -8,7 +8,6 @@ import (
 )
 
 type PageRepositoryImpl struct {
-
 }
 
 func NewPageRepository() PageRepository {
@@ -16,7 +15,7 @@ func NewPageRepository() PageRepository {
 }
 
 func (p PageRepositoryImpl) Show(ctx context.Context, tx *sql.Tx, username string) (entity.Page, error) {
-	query := "select id, background, photo, description from page where username = ?"
+	query := "select id, username, background, photo, description from page where username = ?"
 	rows, err := tx.QueryContext(ctx, query, username)
 	if err != nil {
 		return entity.Page{}, err
@@ -26,21 +25,42 @@ func (p PageRepositoryImpl) Show(ctx context.Context, tx *sql.Tx, username strin
 
 	page := entity.Page{}
 	if rows.Next() {
-		err := rows.Scan(&page.Id, &page.Background, &page.Photo, &page.Description)
+		err := rows.Scan(&page.Id, &page.Username, &page.Background, &page.Photo, &page.Description)
+		if err != nil {
+			return page, err
+		}
+	} else {
+		return page, errors.New("page not found")
+	}
+
+	var links []entity.Link
+
+	query = "select id, url, visited from link where id_page = ?;"
+	linkRows, err := tx.QueryContext(ctx, query, page.Id)
+	if err != nil {
+		return page, err
+	}
+
+	defer linkRows.Close()
+
+	link := entity.Link{}
+	if linkRows.Next() {
+		err := linkRows.Scan(&link.Id, &link.Url, &link.Visited)
 		if err != nil {
 			return page, err
 		}
 
-		return page, nil
-	} else {
-		return page, errors.New("page not found")
+		links = append(links, link)
 	}
+
+	page.Links = links
+
+	return page, nil
 }
 
 func (p PageRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, page entity.Page) (entity.Page, error) {
-	var idUser int
 	query := "insert into page(id_user, username, background, photo, description, created_at) values (?,?,?,?,?,?)"
-	result, err := tx.ExecContext(ctx, query, idUser, page.Username, page.Background, page.Photo, page.Description)
+	result, err := tx.ExecContext(ctx, query, page.IdUser, page.Username, page.Background, page.Photo, page.Description, page.CreatedAt)
 	if err != nil {
 		return entity.Page{}, err
 	}
@@ -55,8 +75,8 @@ func (p PageRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, page entity.Pa
 }
 
 func (p PageRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, page entity.Page) (entity.Page, error) {
-	query := "update page set background = ?, photo = ?, description = ? where username = ?"
-	_, err := tx.ExecContext(ctx, query, page.Background, page.Photo, page.Description, page.Username)
+	query := "update page set background = ?, photo = ?, description = ?, modified_at = ? where username = ?"
+	_, err := tx.ExecContext(ctx, query, page.Background, page.Photo, page.Description, page.ModifiedAt, page.Username)
 
 	if err != nil {
 		return entity.Page{}, err
@@ -65,5 +85,24 @@ func (p PageRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, page entity.
 	return page, nil
 }
 
+func (p PageRepositoryImpl) GetUsernameId(ctx context.Context, tx *sql.Tx, username string) (int, error) {
+	query := "select id from user where username = ?;"
+	rows, err := tx.QueryContext(ctx, query, username)
+	if err != nil {
+		return -1, err
+	}
 
+	defer rows.Close()
 
+	user := entity.User{}
+	if rows.Next() {
+		err = rows.Scan(&user.Id)
+		if err != nil {
+			return -1, err
+		}
+
+		return user.Id, err
+	} else {
+		return -1, errors.New("user not found")
+	}
+}

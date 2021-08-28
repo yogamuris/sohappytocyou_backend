@@ -6,10 +6,10 @@ import (
 )
 
 type User struct {
-	Id         int       `json:"id,omitempty"`
-	Username   string    `json:"username,omitempty"`
-	Email      string    `json:"email,omitempty"`
-	Password   string    `json:"password,omitempty"`
-	CreatedAt  time.Time `json:"created_at,omitempty"`
-	VerifiedAt sql.NullTime `json:"verified_at,omitempty"`
+	Id         int
+	Username   string
+	Email      string
+	Password   string
+	CreatedAt  time.Time
+	VerifiedAt sql.NullTime
 }

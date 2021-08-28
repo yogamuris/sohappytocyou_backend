@@ -21,7 +21,7 @@ func NewUserHandler(userService service.UserService) UserHandler {
 func (handler *UserHandler) Create(writer http.ResponseWriter, request *http.Request) {
 	userCreateRequest := web.UserCreateRequest{}
 	decoder := json.NewDecoder(request.Body)
-	err := decoder.Decode(userCreateRequest)
+	err := decoder.Decode(&userCreateRequest)
 	if err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
 		return
@@ -33,6 +33,14 @@ func (handler *UserHandler) Create(writer http.ResponseWriter, request *http.Req
 
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
+
+		if err.Error() == "unique field message" {
+			encoder.Encode(web.WebResponse{
+				Code: 500,
+				Data: "Username / Email tidak tersedia",
+			})
+		}
+
 		return
 	}
 
