@@ -11,9 +11,11 @@ CREATE TABLE page(
                      id INTEGER PRIMARY KEY,
                      id_user INTEGER NOT NULL,
                      username VARCHAR(50) UNIQUE NOT NULL,
-                     backgroud VARCHAR(10),
+                     background VARCHAR(10),
                      photo VARCHAR(255),
                      description VARCHAR(255),
+                     created_at DATETIME,
+                     modified_at DATETIME,
                      FOREIGN KEY (id_user)
                          REFERENCES user (id)
 );
@@ -22,7 +24,9 @@ CREATE TABLE link(
                      id INTEGER PRIMARY KEY,
                      id_page INTEGER NOT NULL,
                      url VARCHAR(255) NOT NULL,
-                     Visited INTEGER DEFAULT 0,
+                     visited INTEGER DEFAULT 0,
+                     created_at DATETIME,
+                     modified_at DATETIME,
                      FOREIGN KEY (id_page)
                          REFERENCES page (id)
 );
