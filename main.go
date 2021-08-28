@@ -17,8 +17,6 @@ func main() {
 
 	validate := validator.New()
 
-	linkHandler := handler.NewLinkHandler()
-
 	userRepository := repository.NewUserRepository()
 	userService := service.NewUserService(userRepository, db, validate)
 	userHandler := handler.NewUserHandler(userService)
@@ -29,6 +27,10 @@ func main() {
 	pageRepository := repository.NewPageRepository()
 	pageService := service.NewPageService(pageRepository, db, validate)
 	pageHandler := handler.NewPageHandler(pageService)
+
+	linkRepository := repository.NewLinkRepository()
+	linkService := service.NewLinkService(linkRepository, db, validate)
+	linkHandler := handler.NewLinkHandler(linkService)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/auth/login", authHandler.Login).Methods("POST")

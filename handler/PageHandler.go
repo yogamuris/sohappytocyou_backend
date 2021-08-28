@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/yogamuris/sohappytocyou/entity/web"
 	"log"
 
@@ -19,17 +20,10 @@ func NewPageHandler(pageService service.PageService) PageHandler {
 }
 
 func (handler *PageHandler) Show(writer http.ResponseWriter, request *http.Request) {
-	pageRequest := web.PageRequest{}
-	decoder := json.NewDecoder(request.Body)
-	err := decoder.Decode(&pageRequest)
+	params := mux.Vars(request)
+	username := params["username"]
 
-	if err != nil {
-		log.Println(err)
-		writer.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	pageResponse, err := handler.PageService.Show(request.Context(), pageRequest)
+	pageResponse, err := handler.PageService.Show(request.Context(), username)
 	encoder := json.NewEncoder(writer)
 
 	if err != nil {

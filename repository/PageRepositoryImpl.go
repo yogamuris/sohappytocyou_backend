@@ -44,7 +44,7 @@ func (p PageRepositoryImpl) Show(ctx context.Context, tx *sql.Tx, username strin
 	defer linkRows.Close()
 
 	link := entity.Link{}
-	if linkRows.Next() {
+	for linkRows.Next() {
 		err := linkRows.Scan(&link.Id, &link.Url, &link.Visited)
 		if err != nil {
 			return page, err

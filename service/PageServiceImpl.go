@@ -25,14 +25,14 @@ func NewPageService(pageRepository repository.PageRepository, db *sql.DB, valida
 	}
 }
 
-func (service PageServiceImpl) Show(ctx context.Context, request web.PageRequest) (web.PageResponse, error) {
+func (service PageServiceImpl) Show(ctx context.Context, username string) (web.PageResponse, error) {
 	tx, err := service.Db.Begin()
 	if err != nil {
 		return web.PageResponse{}, err
 	}
 	defer helper.CommitOrRollback(tx)
 
-	page, err := service.PageRepository.Show(ctx, tx, request.Username)
+	page, err := service.PageRepository.Show(ctx, tx, username)
 	if err != nil {
 		return web.PageResponse{}, err
 	}
