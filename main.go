@@ -36,6 +36,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
 	router.HandleFunc("/auth/register", authHandler.Register).Methods("POST")
+	router.HandleFunc("/auth/refresh", authHandler.Refresh).Methods("POST")
 	//router.HandleFunc("/auth/verify", authHandler.Verify).Methods("POST")
 
 	userRouter := router.PathPrefix("/user").Subrouter()

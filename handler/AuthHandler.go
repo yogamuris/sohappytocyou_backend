@@ -15,6 +15,8 @@ type AuthHandler struct {
 	AuthService service.AuthService
 }
 
+var jwtKey = []byte("lets_groove_tonight")
+
 func NewAuthHandler(service service.AuthService) AuthHandler {
 	return AuthHandler{
 		AuthService: service,
@@ -22,7 +24,7 @@ func NewAuthHandler(service service.AuthService) AuthHandler {
 }
 
 func GenerateJWT(username string, expiration time.Time) (string, error) {
-	var jwtKey = []byte("lets_groove_tonight")
+
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 
@@ -60,7 +62,7 @@ func (handler *AuthHandler) Login(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 
-	expiration := time.Now().Add(1 * time.Minute)
+	expiration := time.Now().Add(60 * time.Minute)
 
 	validToken, err := GenerateJWT(user.Username, expiration)
 	if err != nil {
@@ -81,6 +83,61 @@ func (handler *AuthHandler) Login(writer http.ResponseWriter, request *http.Requ
 
 	writer.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(writer).Encode(token)
+}
+
+func (handler *AuthHandler) Refresh(writer http.ResponseWriter, request *http.Request) {
+	cookie, err := request.Cookie("sohappytocyou_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			writer.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	token := cookie.Value
+	claims := web.Claims{}
+	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			writer.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if !tkn.Valid {
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if time.Unix(claims.ExpiresAt, 0).Sub(time.Now()) > 5*time.Minute {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	expirationTime := time.Now().Add(60 * time.Minute)
+	claims.ExpiresAt = expirationTime.Unix()
+	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := newToken.SignedString(jwtKey)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(writer, &http.Cookie{
+		Name:    "sohappytocyou_token",
+		Value:   tokenString,
+		Expires: expirationTime,
+		Path:    "/",
+	})
 }
 
 func (handler *AuthHandler) Register(writer http.ResponseWriter, request *http.Request) {
