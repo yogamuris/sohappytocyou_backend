@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/yogamuris/sohappytocyou/database"
 	"github.com/yogamuris/sohappytocyou/handler"
+	"github.com/yogamuris/sohappytocyou/middleware"
 	"github.com/yogamuris/sohappytocyou/repository"
 	"github.com/yogamuris/sohappytocyou/service"
 	"log"
@@ -35,23 +36,26 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
 	router.HandleFunc("/auth/register", authHandler.Register).Methods("POST")
-	router.HandleFunc("/auth/verify", authHandler.Verify).Methods("POST")
+	//router.HandleFunc("/auth/verify", authHandler.Verify).Methods("POST")
 
-	router.HandleFunc("/user/{username}", userHandler.FindByUsername).Methods("GET")
-	router.HandleFunc("/user/{username}/change-password", userHandler.ChangePassword).Methods("PUT")
+	userRouter := router.PathPrefix("/user").Subrouter()
+	userRouter.Use(middleware.AuthMiddleware)
 
-	router.HandleFunc("/user/{username}/page", pageHandler.Show).Methods("GET")
-	router.HandleFunc("/user/{username}/page", pageHandler.Create).Methods("POST")
-	router.HandleFunc("/user/{username}/page/update", pageHandler.Update).Methods("PUT")
+	userRouter.HandleFunc("/{username}", userHandler.FindByUsername).Methods("GET")
+	userRouter.HandleFunc("/{username}/change-password", userHandler.ChangePassword).Methods("PUT")
 
-	router.HandleFunc("/user/{username}/page/links", linkHandler.List).Methods("GET")
-	router.HandleFunc("/user/{username}/page/links", linkHandler.Create).Methods("POST")
-	router.HandleFunc("/user/{username}/page/links/{id}", linkHandler.Show).Methods("GET")
-	router.HandleFunc("/user/{username}/page/links/{id}/delete", linkHandler.Delete).Methods("DELETE")
+	userRouter.HandleFunc("/{username}/page", pageHandler.Show).Methods("GET")
+	userRouter.HandleFunc("/{username}/page", pageHandler.Create).Methods("POST")
+	userRouter.HandleFunc("/{username}/page/update", pageHandler.Update).Methods("PUT")
 
-	router.HandleFunc("/user/{username}/page/analytic", NotImplemented).Methods("GET")
-	router.HandleFunc("/user/{username}/page/links/analytic", NotImplemented).Methods("GET")
-	router.HandleFunc("/user/{username}/page/links/{id}/analytic", NotImplemented).Methods("GET")
+	userRouter.HandleFunc("/{username}/page/links", linkHandler.List).Methods("GET")
+	userRouter.HandleFunc("/{username}/page/links", linkHandler.Create).Methods("POST")
+	userRouter.HandleFunc("/{username}/page/links/{id}", linkHandler.Show).Methods("GET")
+	userRouter.HandleFunc("/{username}/page/links/{id}/delete", linkHandler.Delete).Methods("DELETE")
+
+	//router.HandleFunc("/user/{username}/page/analytic", NotImplemented).Methods("GET")
+	//router.HandleFunc("/user/{username}/page/links/analytic", NotImplemented).Methods("GET")
+	//router.HandleFunc("/user/{username}/page/links/{id}/analytic", NotImplemented).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

@@ -26,8 +26,19 @@ func NewAuthServie(userRepository repository.UserRepository, DB *sql.DB, validat
 	}
 }
 
-func (service AuthServiceImpl) Login(ctx context.Context, request web.LoginRequest) (web.AuthResponse, error) {
-	panic("implement me")
+func (service AuthServiceImpl) Login(ctx context.Context, request web.LoginRequest) (entity.User, error) {
+	tx, err := service.Db.Begin()
+	if err != nil {
+		return entity.User{}, err
+	}
+	defer helper.CommitOrRollback(tx)
+
+	user, err := service.UserRepository.FindByUsername(ctx, tx, request.Username)
+	if err != nil {
+		return entity.User{}, err
+	}
+
+	return user, nil
 }
 
 func (service AuthServiceImpl) Register(ctx context.Context, request web.RegisterRequest) (web.AuthResponse, error) {

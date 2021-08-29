@@ -20,6 +20,15 @@ func NewPageHandler(pageService service.PageService) PageHandler {
 }
 
 func (handler *PageHandler) Show(writer http.ResponseWriter, request *http.Request) {
+	//token, err := request.Cookie("sohappytocyou_token")
+	//log.Println(token.Value)
+	//if err != nil {
+	//	log.Println(err)
+	//	writer.WriteHeader(http.StatusUnauthorized)
+	//	return
+	//}
+	//
+	//writer.Header().Set("Token", token.Value)
 	params := mux.Vars(request)
 	username := params["username"]
 
@@ -41,6 +50,7 @@ func (handler *PageHandler) Show(writer http.ResponseWriter, request *http.Reque
 	writer.WriteHeader(http.StatusOK)
 	err = encoder.Encode(webResponse)
 	if err != nil {
+		log.Println(err)
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
