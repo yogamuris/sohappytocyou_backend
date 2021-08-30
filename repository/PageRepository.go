@@ -1,11 +1,14 @@
 package repository
 
-import "github.com/yogamuris/sohappytocyou/entity"
+import (
+	"context"
+	"database/sql"
+	"github.com/yogamuris/sohappytocyou/entity"
+)
 
 type PageRepository interface {
-	FindByUsername(username string) (*entity.Link, error)
-	Save(page entity.Page) error
-	AddLink(link entity.Link) error
-	Update(page entity.Page) error
-	Delete(page entity.Page) error
+	Show(ctx context.Context, tx *sql.Tx, username string) (entity.Page, error)
+	Save(ctx context.Context, tx *sql.Tx, page entity.Page) (entity.Page, error)
+	Update(ctx context.Context, tx *sql.Tx, page entity.Page) (entity.Page, error)
+	GetUsernameId(ctx context.Context, tx *sql.Tx, username string) (int, error)
 }

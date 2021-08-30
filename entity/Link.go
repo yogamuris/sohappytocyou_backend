@@ -1,7 +1,12 @@
 package entity
 
+import "time"
+
 type Link struct {
-	Id      int    `json:"id,omitempty"`
-	Url     string `json:"url,omitempty"`
-	Visited int  `json:"visited,omitempty"`
+	Id         int
+	IdPage     int
+	Url        string
+	Visited    int
+	CreatedAt  time.Time
+	ModifiedAt time.Time
 }
