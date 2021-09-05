@@ -20,15 +20,6 @@ func NewPageHandler(pageService service.PageService) PageHandler {
 }
 
 func (handler *PageHandler) Show(writer http.ResponseWriter, request *http.Request) {
-	//token, err := request.Cookie("sohappytocyou_token")
-	//log.Println(token.Value)
-	//if err != nil {
-	//	log.Println(err)
-	//	writer.WriteHeader(http.StatusUnauthorized)
-	//	return
-	//}
-	//
-	//writer.Header().Set("Token", token.Value)
 	params := mux.Vars(request)
 	username := params["username"]
 
@@ -36,7 +27,10 @@ func (handler *PageHandler) Show(writer http.ResponseWriter, request *http.Reque
 	encoder := json.NewEncoder(writer)
 
 	if err != nil {
-		log.Println(err)
+		if err.Error() == "page not found" {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -57,6 +51,14 @@ func (handler *PageHandler) Show(writer http.ResponseWriter, request *http.Reque
 }
 
 func (handler *PageHandler) Create(writer http.ResponseWriter, request *http.Request) {
+	params := mux.Vars(request)
+
+	username := params["username"]
+	if username != request.Context().Value("username") {
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	pageSaveRequest := web.PageSaveRequest{}
 	decoder := json.NewDecoder(request.Body)
 	err := decoder.Decode(&pageSaveRequest)
@@ -90,6 +92,14 @@ func (handler *PageHandler) Create(writer http.ResponseWriter, request *http.Req
 }
 
 func (handler *PageHandler) Update(writer http.ResponseWriter, request *http.Request) {
+	params := mux.Vars(request)
+
+	username := params["username"]
+	if username != request.Context().Value("username") {
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	pageUpdateRequest := web.PageUpdateRequest{}
 	decoder := json.NewDecoder(request.Body)
 	err := decoder.Decode(&pageUpdateRequest)

@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/yogamuris/sohappytocyou/entity/web"
 	"github.com/yogamuris/sohappytocyou/service"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -20,6 +21,11 @@ func NewLinkHandler(service service.LinkService) LinkHandler {
 func (handler *LinkHandler) List(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	username := params["username"]
+
+	if username != request.Context().Value("username") {
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	linkResponse, err := handler.Service.List(request.Context(), username)
 	encoder := json.NewEncoder(writer)
@@ -38,6 +44,7 @@ func (handler *LinkHandler) List(writer http.ResponseWriter, request *http.Reque
 	writer.WriteHeader(http.StatusOK)
 	err = encoder.Encode(webResponse)
 	if err != nil {
+		log.Println(err)
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -46,6 +53,13 @@ func (handler *LinkHandler) List(writer http.ResponseWriter, request *http.Reque
 
 func (handler *LinkHandler) Show(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
+
+	username := params["username"]
+	if username != request.Context().Value("username") {
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	idLink := params["id"]
 	id, _ := strconv.Atoi(idLink)
 
@@ -77,6 +91,14 @@ func (handler *LinkHandler) Show(writer http.ResponseWriter, request *http.Reque
 }
 
 func (handler *LinkHandler) Create(writer http.ResponseWriter, request *http.Request) {
+	params := mux.Vars(request)
+
+	username := params["username"]
+	if username != request.Context().Value("username") {
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	linkSaveRequest := web.LinkSaveRequest{}
 	decoder := json.NewDecoder(request.Body)
 	err := decoder.Decode(&linkSaveRequest)
@@ -109,6 +131,14 @@ func (handler *LinkHandler) Create(writer http.ResponseWriter, request *http.Req
 }
 
 func (handler *LinkHandler) Delete(writer http.ResponseWriter, request *http.Request) {
+	params := mux.Vars(request)
+
+	username := params["username"]
+	if username != request.Context().Value("username") {
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	linkDeleteRequest := web.LinkDeleteRequest{}
 	decoder := json.NewDecoder(request.Body)
 	err := decoder.Decode(&linkDeleteRequest)

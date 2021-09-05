@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/yogamuris/sohappytocyou/entity/web"
+	"github.com/yogamuris/sohappytocyou/helper"
 	"github.com/yogamuris/sohappytocyou/service"
 	"golang.org/x/crypto/bcrypt"
 	"log"
@@ -15,7 +16,7 @@ type AuthHandler struct {
 	AuthService service.AuthService
 }
 
-var jwtKey = []byte("lets_groove_tonight")
+var jwtKey = []byte(helper.GetEnv(".env", "JWT_KEY"))
 
 func NewAuthHandler(service service.AuthService) AuthHandler {
 	return AuthHandler{
@@ -54,10 +55,10 @@ func (handler *AuthHandler) Login(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 
-	checkPassword := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)) != nil
+	checkPassword := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password))
 
-	if !checkPassword {
-		log.Println("salah pwd")
+	if checkPassword != nil {
+		log.Println("wrong password")
 		writer.WriteHeader(http.StatusUnauthorized)
 		return
 	}

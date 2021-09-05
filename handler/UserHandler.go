@@ -18,36 +18,15 @@ func NewUserHandler(userService service.UserService) UserHandler {
 	}
 }
 
-func (handler *UserHandler) Create(writer http.ResponseWriter, request *http.Request) {
-	userCreateRequest := web.UserCreateRequest{}
-	decoder := json.NewDecoder(request.Body)
-	err := decoder.Decode(&userCreateRequest)
-	if err != nil {
-		writer.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	userResponse, err := handler.UserService.Create(request.Context(), userCreateRequest)
-
-	encoder := json.NewEncoder(writer)
-
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-
-		if err.Error() == "unique field message" {
-			encoder.Encode(web.WebResponse{
-				Code: 500,
-				Data: "Username / Email tidak tersedia",
-			})
-		}
-
-		return
-	}
-
-	writeOkRequest(writer, encoder, userResponse)
-}
-
 func (handler *UserHandler) ChangePassword(writer http.ResponseWriter, request *http.Request) {
+	params := mux.Vars(request)
+
+	username := params["username"]
+	if username != request.Context().Value("username") {
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	userChangePasswordRequest := web.UserChangePasswordRequest{}
 	decoder := json.NewDecoder(request.Body)
 	err := decoder.Decode(&userChangePasswordRequest)
@@ -70,6 +49,11 @@ func (handler *UserHandler) ChangePassword(writer http.ResponseWriter, request *
 func (handler *UserHandler) FindByUsername(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	username := params["username"]
+
+	if username != request.Context().Value("username") {
+		writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	encoder := json.NewEncoder(writer)
 	userResponse, err := handler.UserService.FindByUsername(request.Context(), username)
