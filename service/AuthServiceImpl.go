@@ -18,7 +18,7 @@ type AuthServiceImpl struct {
 	Validate       *validator.Validate
 }
 
-func NewAuthServie(userRepository repository.UserRepository, DB *sql.DB, validate *validator.Validate) AuthService {
+func NewAuthService(userRepository repository.UserRepository, DB *sql.DB, validate *validator.Validate) AuthService {
 	return &AuthServiceImpl{
 		UserRepository: userRepository,
 		Db:             DB,
@@ -33,7 +33,7 @@ func (service AuthServiceImpl) Login(ctx context.Context, request web.LoginReque
 	}
 	defer helper.CommitOrRollback(tx)
 
-	user, err := service.UserRepository.FindByUsername(ctx, tx, request.Username)
+	user, err := service.UserRepository.GetUserCredential(ctx, tx, request.Username)
 	if err != nil {
 		return entity.User{}, err
 	}

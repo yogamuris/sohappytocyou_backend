@@ -26,13 +26,7 @@ func NewLinkService(repository repository.LinkRepository, DB *sql.DB, validate *
 }
 
 func (service LinkServiceImpl) List(ctx context.Context, username string) (web.LinkListResponse, error) {
-	tx, err := service.Db.Begin()
-	if err != nil {
-		return web.LinkListResponse{}, err
-	}
-	defer helper.CommitOrRollback(tx)
-
-	links, err := service.LinkRepository.List(ctx, tx, username)
+	links, err := service.LinkRepository.List(ctx, service.Db, username)
 	if err != nil {
 		return web.LinkListResponse{}, err
 	}
