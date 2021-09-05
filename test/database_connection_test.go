@@ -6,10 +6,10 @@ import (
 )
 
 func TestDatabaseConnection(t *testing.T) {
-	db := database.GetDB()
+	db := database.GetTestDB()
 
 	err := db.Ping()
 	if err != nil {
-		t.Error("Database error")
+		t.Error("Database message")
 	}
 }

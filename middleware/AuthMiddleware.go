@@ -1,8 +1,10 @@
 package middleware
 
 import (
+	"context"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/yogamuris/sohappytocyou/entity/web"
+	"github.com/yogamuris/sohappytocyou/helper"
 	"log"
 	"net/http"
 )
@@ -25,7 +27,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		claims := &web.Claims{}
 
-		var jwtKey = []byte("lets_groove_tonight")
+		var jwtKey = []byte(helper.GetEnv(".env", "JWT_KEY"))
 
 		tkn, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return jwtKey, nil
@@ -38,6 +40,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 				return
 			}
 
+			log.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -48,6 +51,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), "username", claims.Username)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

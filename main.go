@@ -13,7 +13,9 @@ import (
 )
 
 func main() {
+
 	db := database.GetDB()
+
 	defer db.Close()
 
 	validate := validator.New()
@@ -22,7 +24,7 @@ func main() {
 	userService := service.NewUserService(userRepository, db, validate)
 	userHandler := handler.NewUserHandler(userService)
 
-	authService := service.NewAuthServie(userRepository, db, validate)
+	authService := service.NewAuthService(userRepository, db, validate)
 	authHandler := handler.NewAuthHandler(authService)
 
 	pageRepository := repository.NewPageRepository()
@@ -45,7 +47,7 @@ func main() {
 	userRouter.HandleFunc("/{username}", userHandler.FindByUsername).Methods("GET")
 	userRouter.HandleFunc("/{username}/change-password", userHandler.ChangePassword).Methods("PUT")
 
-	userRouter.HandleFunc("/{username}/page", pageHandler.Show).Methods("GET")
+	router.HandleFunc("/user/{username}/page", pageHandler.Show).Methods("GET")
 	userRouter.HandleFunc("/{username}/page", pageHandler.Create).Methods("POST")
 	userRouter.HandleFunc("/{username}/page/update", pageHandler.Update).Methods("PUT")
 
