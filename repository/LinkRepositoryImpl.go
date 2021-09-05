@@ -34,22 +34,26 @@ func (l LinkRepositoryImpl) Show(ctx context.Context, tx *sql.Tx, id int) (entit
 	}
 }
 
-func (l LinkRepositoryImpl) List(ctx context.Context, tx *sql.Tx, username string) ([]entity.Link, error) {
+func (l LinkRepositoryImpl) List(ctx context.Context, db *sql.DB, username string) ([]entity.Link, error) {
 	query := "select id from page where username = ?;"
-	rows, err := tx.QueryContext(ctx, query, username)
+	rows, err := db.QueryContext(ctx, query, username)
 
 	var page entity.Page
 	if rows.Next() {
 		rows.Scan(&page.Id)
 	}
 
+	defer rows.Close()
+
 	query = "select id, id_page, url, visited from link where id_page = ?;"
-	rows, err = tx.QueryContext(ctx, query, page.Id)
+	rows, err = db.QueryContext(ctx, query, page.Id)
 	if err != nil {
 		return nil, err
 	}
 
 	var links []entity.Link
+
+	defer rows.Close()
 
 	for rows.Next() {
 		var link entity.Link

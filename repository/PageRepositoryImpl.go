@@ -14,9 +14,9 @@ func NewPageRepository() PageRepository {
 	return &PageRepositoryImpl{}
 }
 
-func (p PageRepositoryImpl) Show(ctx context.Context, tx *sql.Tx, username string) (entity.Page, error) {
+func (p PageRepositoryImpl) Show(ctx context.Context, db *sql.DB, username string) (entity.Page, error) {
 	query := "select id, username, background, photo, description from page where username = ?"
-	rows, err := tx.QueryContext(ctx, query, username)
+	rows, err := db.QueryContext(ctx, query, username)
 	if err != nil {
 		return entity.Page{}, err
 	}
@@ -36,7 +36,7 @@ func (p PageRepositoryImpl) Show(ctx context.Context, tx *sql.Tx, username strin
 	var links []entity.Link
 
 	query = "select id, url, visited from link where id_page = ?;"
-	linkRows, err := tx.QueryContext(ctx, query, page.Id)
+	linkRows, err := db.QueryContext(ctx, query, page.Id)
 	if err != nil {
 		return page, err
 	}

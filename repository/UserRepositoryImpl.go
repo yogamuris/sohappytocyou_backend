@@ -59,6 +59,28 @@ func (u UserRepositoryImpl) FindByUsername(ctx context.Context, tx *sql.Tx, user
 	}
 }
 
+func (u UserRepositoryImpl) GetUserCredential(ctx context.Context, tx *sql.Tx, username string) (entity.User, error) {
+	query := "select id, username, password, email from user where username = ?;"
+	rows, err := tx.QueryContext(ctx, query, username)
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+
+	user := entity.User{}
+	if rows.Next() {
+		err = rows.Scan(&user.Id, &user.Username, &user.Password, &user.Email)
+		if err != nil {
+			return user, err
+		}
+
+		return user, nil
+	} else {
+		return user, errors.New("user not found")
+	}
+}
+
 func (u UserRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, user entity.User) (entity.User, error) {
 	query := "insert into user(username, email, password, created_at) values(?, ?, ?, ?);"
 	result, err := tx.ExecContext(ctx, query, user.Username, user.Email, user.Password, user.CreatedAt)

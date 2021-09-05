@@ -7,7 +7,7 @@ import (
 )
 
 type PageRepository interface {
-	Show(ctx context.Context, tx *sql.Tx, username string) (entity.Page, error)
+	Show(ctx context.Context, db *sql.DB, username string) (entity.Page, error)
 	Save(ctx context.Context, tx *sql.Tx, page entity.Page) (entity.Page, error)
 	Update(ctx context.Context, tx *sql.Tx, page entity.Page) (entity.Page, error)
 	GetUsernameId(ctx context.Context, tx *sql.Tx, username string) (int, error)
