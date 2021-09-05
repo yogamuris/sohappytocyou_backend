@@ -1,5 +1,5 @@
 CREATE TABLE user(
-                     id INTEGER PRIMARY KEY,
+                     id INTEGER PRIMARY KEY AUTOINCREMENT ,
                      username VARCHAR(50) UNIQUE NOT NULL,
                      email VARCHAR(200) UNIQUE NOT NULL,
                      password VARCHAR(255) NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE user(
 );
 
 CREATE TABLE page(
-                     id INTEGER PRIMARY KEY,
+                     id INTEGER PRIMARY KEY AUTOINCREMENT ,
                      id_user INTEGER NOT NULL,
                      username VARCHAR(50) UNIQUE NOT NULL,
                      background VARCHAR(10),
@@ -21,7 +21,7 @@ CREATE TABLE page(
 );
 
 CREATE TABLE link(
-                     id INTEGER PRIMARY KEY,
+                     id INTEGER PRIMARY KEY AUTOINCREMENT ,
                      id_page INTEGER NOT NULL,
                      url VARCHAR(255) NOT NULL,
                      visited INTEGER DEFAULT 0,
